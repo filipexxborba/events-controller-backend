@@ -1,1 +1,4 @@
-export class CreateEventDto {}
+export class CreateEventDto {
+  title: string;
+  description: string;
+}
