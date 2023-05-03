@@ -13,6 +13,8 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { editFileName, imageFileFilter } from './filesManipulation';
+import { diskStorage } from 'multer';
 
 @Controller('event')
 export class EventController {
@@ -23,10 +25,31 @@ export class EventController {
     return this.eventService.create(createEventDto);
   }
 
-  @Post('upload')
-  @UseInterceptors(FilesInterceptor('files'))
-  uploadFile(@UploadedFiles() files: Array<Express.Multer.File>) {
-    console.log(files);
+  // Filtra os arquivos, vamos receber somente imagens
+  @Post('upload/:id')
+  @UseInterceptors(
+    FilesInterceptor('files', 999, {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: editFileName,
+      }),
+      fileFilter: imageFileFilter,
+    }),
+  )
+  async uploadFile(
+    @UploadedFiles() files: Array<Express.Multer.File>,
+    @Param('id') id: string,
+  ) {
+    const imageList = [];
+    console.log(id);
+    files.forEach((file) => {
+      const fileReponse = {
+        originalname: file.originalname,
+        filename: file.filename,
+      };
+      imageList.push(fileReponse);
+    });
+    return await this.eventService.insertImageList(id, imageList);
   }
 
   @Get()
