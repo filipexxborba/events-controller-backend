@@ -19,6 +19,9 @@ export class Event {
 
   @Prop()
   imageUrlList: string[];
+
+  @Prop()
+  thumbnailImageUrl: string;
 }
 
 export const EventSchema = SchemaFactory.createForClass(Event);

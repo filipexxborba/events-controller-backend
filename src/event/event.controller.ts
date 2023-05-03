@@ -7,12 +7,13 @@ import {
   Param,
   Delete,
   UploadedFiles,
+  UploadedFile,
 } from '@nestjs/common';
 import { EventService } from './event.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { UseInterceptors } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { editFileName, imageFileFilter } from './filesManipulation';
 import { diskStorage } from 'multer';
 
@@ -52,23 +53,52 @@ export class EventController {
     return await this.eventService.insertImageList(id, imageList);
   }
 
+  // Filtra os arquivos, vamos receber somente imagens
+  @Post('thumbnail/:id')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: editFileName,
+      }),
+      fileFilter: imageFileFilter,
+    }),
+  )
+  async uploadThumbnail(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('id') id: string,
+  ) {
+    console.log(id);
+    return await this.eventService.insertThumbnail(id, file.filename);
+  }
+
   @Get()
   findAll() {
     return this.eventService.findAll();
   }
 
+  @Get('allactive')
+  getAllActive() {
+    return this.eventService.getAllActive();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.eventService.findOne(+id);
+    return this.eventService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
-    return this.eventService.update(+id, updateEventDto);
+    return this.eventService.update(id, updateEventDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.eventService.remove(+id);
+    return this.eventService.desactive(id);
+  }
+
+  @Get('active/:id')
+  active(@Param('id') id: string) {
+    return this.eventService.active(id);
   }
 }

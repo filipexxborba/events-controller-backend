@@ -15,6 +15,7 @@ export class EventService {
       createdAt: new Date(),
       isActive: true,
       imageUrlList: [],
+      thumbnailImageUrl: '',
     });
 
     await newEvent.save();
@@ -36,19 +37,54 @@ export class EventService {
     return event;
   }
 
+  async insertThumbnail(eventId: string, imageUrlList: string) {
+    const event = await this.eventModel.findById(eventId);
+    if (!event)
+      throw new NotFoundException('Não foi encontra um evento com esse id');
+
+    event.thumbnailImageUrl = imageUrlList;
+    await event.save();
+    return event;
+  }
+
   async findAll() {
-    return `This action returns all event`;
+    return this.eventModel.find().exec();
   }
 
-  async findOne(id: number) {
-    return `This action returns a #${id} event`;
+  async getAllActive() {
+    console.log('Chegou aqui');
+    return this.eventModel.find({ isActive: true }).exec();
   }
 
-  async update(id: number, updateEventDto: UpdateEventDto) {
-    return `This action updates a #${id} event`;
+  async findOne(id: string) {
+    return this.eventModel.findById(id).exec();
   }
 
-  async remove(id: number) {
-    return `This action removes a #${id} event`;
+  async update(id: string, updateEventDto: UpdateEventDto) {
+    return this.eventModel.findByIdAndUpdate(id, updateEventDto, {
+      new: true,
+    });
+  }
+
+  async desactive(id: string) {
+    const event = await this.eventModel.findById(id);
+    if (!event) {
+      throw new NotFoundException('Nao foi encontra um evento com esse id');
+    }
+
+    event.isActive = false;
+    await event.save();
+    return event;
+  }
+
+  async active(id: string) {
+    const event = await this.eventModel.findById(id);
+    if (!event) {
+      throw new NotFoundException('Nao foi encontra um evento com esse id');
+    }
+
+    event.isActive = true;
+    await event.save();
+    return event;
   }
 }
