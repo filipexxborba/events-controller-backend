@@ -16,7 +16,9 @@ import { UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { editFileName, imageFileFilter } from './filesManipulation';
 import { diskStorage } from 'multer';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Eventos')
 @Controller('event')
 export class EventController {
   constructor(private readonly eventService: EventService) {}
